@@ -152,6 +152,7 @@ public class StrahlerAnalyzer {
 			for (SWCPoint subGraphNode : relevantNodes) {
 				nBranches++;
 				Path p = getPathToFirstRelevantAncestor(subGraphNode);
+				p.setOrder(order);
 				branches.add(p);
 			}
 			

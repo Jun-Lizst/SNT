@@ -23,6 +23,7 @@
 package sc.fiji.snt.analysis.graph;
 
 import java.awt.Window;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -30,9 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.jgrapht.GraphPath;
 import org.jgrapht.GraphTests;
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import org.jgrapht.graph.GraphWalk;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import sc.fiji.snt.Tree;
@@ -204,6 +208,32 @@ public class DirectedWeightedGraph extends DefaultDirectedWeightedGraph<SWCPoint
 
 	public DepthFirstIterator<SWCPoint, SWCWeightedEdge> getDepthFirstIterator(final SWCPoint startVertex) {
 		return new DepthFirstIterator<SWCPoint, SWCWeightedEdge>(this, startVertex);
+	}
+	
+	/**
+	 * Find the shortest directed path (if it exists) between the source and sink vertex.
+	 *
+	 * @return the shortest directed path between the source and sink vertex, or null if no directed path exists.
+	 */	
+	public GraphWalk<SWCPoint, SWCWeightedEdge> getShortestPath(SWCPoint source, SWCPoint sink) {
+		List<SWCPoint> shortestPath = new ArrayList<SWCPoint>();
+		SWCPoint current = sink;
+		shortestPath.add(0, current);
+		if (current == source) {
+			return new GraphWalk<SWCPoint, SWCWeightedEdge>(this, shortestPath, 0);
+		}
+		double weight = 0;
+		while (Graphs.vertexHasPredecessors(this, current)) {
+			SWCPoint parent = Graphs.predecessorListOf(this, current).get(0);
+			double edgeWeight = this.getEdge(parent, current).getWeight();
+			weight += edgeWeight;
+			shortestPath.add(0, parent);
+			if (parent == source) {
+				return new GraphWalk<SWCPoint, SWCWeightedEdge>(this, shortestPath, weight);
+			}
+			current = parent;
+		}
+		return null;
 	}
 
 	/**
